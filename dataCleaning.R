@@ -91,6 +91,33 @@ top50_ID <- silFinal
 top50_ID$ID_50<- ifelse(top50_ID$OPERATING_SYS_OPT_ID %in% top50$x, 1, 0)
 silFinal <- top50_ID[top50_ID$ID_50 == 1,]
 
+#reduce cfirst top 50 reason code id
+silFinal$REASON_CODE_ID <- as.factor(silFinal$REASON_CODE_ID)
+ID_COUNT<- count(silFinal$REASON_CODE_ID)
+ID_sort<-ID_COUNT[order(ID_COUNT$freq, decreasing = T),]
+top50<- head(ID_sort, 50)
+top50_ID <- silFinal
+top50_ID$ID_50<- ifelse(top50_ID$REASON_CODE_ID %in% top50$x, 1, 0)
+silFinal <- top50_ID[top50_ID$ID_50 == 1,]
+
+#reduce cfirst top 50 responsibility code id
+silFinal$RESPONSIBILITY_CODE_ID <- as.factor(silFinal$RESPONSIBILITY_CODE_ID)
+ID_COUNT<- count(silFinal$RESPONSIBILITY_CODE_ID)
+ID_sort<-ID_COUNT[order(ID_COUNT$freq, decreasing = T),]
+top50<- head(ID_sort, 50)
+top50_ID <- silFinal
+top50_ID$ID_50<- ifelse(top50_ID$RESPONSIBILITY_CODE_ID %in% top50$x, 1, 0)
+silFinal <- top50_ID[top50_ID$ID_50 == 1,]
+
+#reduce cfirst top 50 reason code
+silFinal$REASON_CODE <- as.factor(silFinal$REASON_CODE)
+ID_COUNT<- count(silFinal$REASON_CODE)
+ID_sort<-ID_COUNT[order(ID_COUNT$freq, decreasing = T),]
+top50<- head(ID_sort, 50)
+top50_ID <- silFinal
+top50_ID$ID_50<- ifelse(top50_ID$REASON_CODE %in% top50$x, 1, 0)
+silFinal <- top50_ID[top50_ID$ID_50 == 1,]
+
 silFinal <- silFinal[!((silFinal$SALES_ORDER1 %in% silFinal$sil1.ORIGINAL_ORDER1) & (silFinal$ORDER_REASON_ID == "STD" | silFinal$ORDER_REASON_ID == "CON")),]
 
 silFinal$sil1.ORIGINAL_ORDER1 <- NULL
@@ -100,5 +127,17 @@ silFinal$COLOR_ID_50 <- NULL
 silFinal$FABRIC_ID_50 <- NULL
 silFinal$ID_50 <- NULL
 names(silFinal)[names(silFinal) == 'ORIGINAL_ORDER1'] <- 'ORIGINAL_ORDER_COMBINED'
-names(silFinal)[names(silFinal) == 'SALES_ORDER1'] <- 'SALES_ORDER_COMBINED'
+
+
+silFinal$ORIGINAL_MATERIAL_ID <- factor(silFinal$ORIGINAL_MATERIAL_ID)
+silFinal$FABRIC_ID <- factor(silFinal$FABRIC_ID)
+silFinal$COLOR_ID <- factor(silFinal$COLOR_ID)
+silFinal$OPERATING_SYSTEM_ID <- factor(silFinal$OPERATING_SYSTEM_ID)
+silFinal$OPERATING_SYS_OPT_ID <- factor(silFinal$OPERATING_SYS_OPT_ID)
+silFinal$REASON_CODE_ID <- factor(silFinal$REASON_CODE_ID)
+silFinal$RESPONSIBILITY_CODE_ID <- factor(silFinal$RESPONSIBILITY_CODE_ID)
+silFinal$REASON_CODE <- factor(silFinal$REASON_CODE)
+
 save(silFinal, file="silFinal.RData")
+colSums(is.na(silFinal))
+
