@@ -1,3 +1,4 @@
+rm(list=ls())
 hd <- read.csv("Hunter Douglas Quality Data.csv", na.strings = c("NULL",""))
 df <- as.data.frame(hd)
 sil <- df[df$PRODUCT_CATEGORY == '02 Silhouette/Nantucket' & df$ORIGINAL_PLANT == 'G',]
@@ -44,12 +45,60 @@ sil$lag <- NULL
 silFinal <- merge(sil, lagdfToInsert, by.x = 'SALES_ORDER1', by.y='sil1.SALES_ORDER1', all.x = TRUE)
 names(silFinal)[names(silFinal) == 'sil1.lag'] <- 'lagDays'
 silFinal$lagDays[is.na(silFinal$lagDays)] <- 0
-silFinal$failure <- ifelse(sil$ORDER_REASON_ID=="REP" | sil$ORDER_REASON_ID=="REM",1,0)
+silFinal$failure <- ifelse(silFinal$ORDER_REASON_ID=="REP" | silFinal$ORDER_REASON_ID=="REM",1,0)
 sum(silFinal$failure)
+silFinal[,is.factor(silFinal)] <- factor(silFinal[,is.factor(silFinal)])
+unique(silFinal$PRODUCT_CATEGORY)
+
+library('plyr')
+#reduce cfirst top 50 colors
+COLOR_ID_COUNT<- count(silFinal$COLOR_ID)
+color_sort<-COLOR_ID_COUNT[order(COLOR_ID_COUNT$freq, decreasing = T),]
+top50<- head(color_sort, 50)
+top50_colors <- silFinal
+top50_colors$COLOR_ID_50<- ifelse(top50_colors$COLOR_ID %in% top50$x, 1, 0)
+silFinal <- top50_colors[top50_colors$COLOR_ID_50 == 1,]
+
+#reduce cfirst top 50 fabricIDs
+FABRIC_ID_COUNT<- count(silFinal$FABRIC_ID)
+FABRIC_ID_sort<-FABRIC_ID_COUNT[order(FABRIC_ID_COUNT$freq, decreasing = T),]
+top50<- head(FABRIC_ID_sort, 50)
+top50_FABRIC_ID <- silFinal
+top50_FABRIC_ID$FABRIC_ID_50<- ifelse(top50_FABRIC_ID$FABRIC_ID %in% top50$x, 1, 0)
+silFinal <- top50_FABRIC_ID[top50_FABRIC_ID$FABRIC_ID_50 == 1,]
+
+#reduce cfirst top 50 operating system id
+ID_COUNT<- count(silFinal$OPERATING_SYSTEM_ID)
+ID_sort<-ID_COUNT[order(ID_COUNT$freq, decreasing = T),]
+top50<- head(ID_sort, 50)
+top50_ID <- silFinal
+top50_ID$ID_50<- ifelse(top50_ID$OPERATING_SYSTEM_ID %in% top50$x, 1, 0)
+silFinal <- top50_ID[top50_ID$ID_50 == 1,]
+
+#reduce cfirst top 50 original material id
+ID_COUNT<- count(silFinal$ORIGINAL_MATERIAL_ID)
+ID_sort<-ID_COUNT[order(ID_COUNT$freq, decreasing = T),]
+top50<- head(ID_sort, 50)
+top50_ID <- silFinal
+top50_ID$ID_50<- ifelse(top50_ID$ORIGINAL_MATERIAL_ID %in% top50$x, 1, 0)
+silFinal <- top50_ID[top50_ID$ID_50 == 1,]
+
+#reduce cfirst top 50 operating sys opt id
+ID_COUNT<- count(silFinal$OPERATING_SYS_OPT_ID)
+ID_sort<-ID_COUNT[order(ID_COUNT$freq, decreasing = T),]
+top50<- head(ID_sort, 50)
+top50_ID <- silFinal
+top50_ID$ID_50<- ifelse(top50_ID$OPERATING_SYS_OPT_ID %in% top50$x, 1, 0)
+silFinal <- top50_ID[top50_ID$ID_50 == 1,]
+
+silFinal <- silFinal[!((silFinal$SALES_ORDER1 %in% silFinal$sil1.ORIGINAL_ORDER1) & (silFinal$ORDER_REASON_ID == "STD" | silFinal$ORDER_REASON_ID == "CON")),]
+
+silFinal$sil1.ORIGINAL_ORDER1 <- NULL
+silFinal$PRODUCT_CATEGORY <- NULL
+silFinal$ORIGINAL_PLANT <- NULL
+silFinal$COLOR_ID_50 <- NULL
+silFinal$FABRIC_ID_50 <- NULL
+silFinal$ID_50 <- NULL
+names(silFinal)[names(silFinal) == 'ORIGINAL_ORDER1'] <- 'ORIGINAL_ORDER_COMBINED'
+names(silFinal)[names(silFinal) == 'SALES_ORDER1'] <- 'SALES_ORDER_COMBINED'
 save(silFinal, file="silFinal.RData")
-
-silFinal$FABRIC_ID <- factor(silFinal$FABRIC_ID)
-silFinal$COLOR_ID <- factor(silFinal$COLOR_ID)
-length(table(silFinal$COLOR_ID))
-
-
